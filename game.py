@@ -28,6 +28,9 @@ class Agent():
             self.colors_in_hand.setdefault(i['color'], 0)
             self.colors_in_hand[i['color']] += 1
 
+        self.max_rank_index = max([ranks.index(j['rank']) for j in i.hand])
+        self.min_rank_index = max([ranks.index(j['rank']) for j in i.hand])
+
         self.full_hand_representation = list()
         for i in self.hand:
             color_rep = [1 if j == i['color'] else 0 for j in colors]
@@ -77,11 +80,10 @@ class Game():
             highest_flush_val = dict()
 
             for i in self.players:
-                max_rank_index = max([ranks.index(j['rank']) for j in i.hand])
-                min_rank_index = max([ranks.index(j['rank']) for j in i.hand])
-                if max_rank_index - min_rank_index == 5 and len(list(set([j['color'] for j in i.hand]))) == 1:
-                    highest_flush_val.setdefault(max_rank_index, [])
-                    highest_flush_val[max_rank_index].append(i.get_id())
+
+                if i.max_rank_index - i.min_rank_index == 5 and len(list(set([j['color'] for j in i.hand]))) == 1:
+                    highest_flush_val.setdefault(i.max_rank_index, [])
+                    highest_flush_val[i.max_rank_index].append(i.get_id())
             if highest_flush_val:
                 max_res = max(highest_flush_val.keys())
                 self.winners = highest_flush_val[max_res]
@@ -117,8 +119,36 @@ class Game():
             if highest_val:
                 self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
 
+        #straight
+        if not self.winners:
+            highest_val = dict()
+            for i in self.players:
+                if i.max_rank_index - i.min_rank_index == 5 and len(i.ranks_in_hand.keys()) == 5:
+                    highest_val[i.get_id()] = i.max_rank_index
+            if highest_val:
+                self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
 
+        #3 of a kind
+        if not self.winners:
+            highest_val = dict()
+            for i in self.players:
+                if max(i.ranks_in_hand.values()) == 3:
+                    reverse_dict = {j:i for i, j in i.ranks_in_hand.items()}
+                    highest_val[i.get_id()] = ranks.index(reverse_dict[3])
+            if highest_val:
+                self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
 
-
-
+        #two pair
+        
+        # if not self.winners:
+        #     highest_val = dict()
+        #     for i in self.players:
+        #
+        #         pair_counter =
+        #
+        #         if 2 in i.ranks_in_hand.values():
+        #             reverse_dict = {j:i for i, j in i.ranks_in_hand.items()}
+        #             highest_val[i.get_id()] = ranks.index(reverse_dict[3])
+        #     if highest_val:
+        #         self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
 
