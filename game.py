@@ -44,11 +44,11 @@ class Agent():
         while len(self.full_hand_representation) < 5*(len(ranks) + len(colors)):
             self.full_hand_representation.append(0)
 
-        self.partial_representation = list()
-        for i in ranks:
-            self.partial_representation.append(self.ranks_in_hand.get(i, 0 ))
-        for i in colors:
-            self.partial_representation.append(self.colors_in_hand.get(i, 0 ))
+        # self.partial_representation = list()
+        # for i in ranks:
+        #     self.partial_representation.append(self.ranks_in_hand.get(i, 0 ))
+        # for i in colors:
+        #     self.partial_representation.append(self.colors_in_hand.get(i, 0 ))
 
     def get_representation(self):
         return self.full_hand_representation
