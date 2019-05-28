@@ -1,7 +1,10 @@
 import uuid
+import random
+
 
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
 colors = ['clubs', 'diamonds', 'hearts', 'spades']
+options = ['raise', 'call', 'fold']
 
 class Agent():
     def __init__(self):
@@ -12,7 +15,7 @@ class Agent():
         self.hand_representation = list()
 
 
-    def play_turn(self, game_state):
+    def play_turn(self, turn, representations, player_amounts, pot, current_price):
 
         self.update_representation()
 
@@ -28,8 +31,8 @@ class Agent():
             self.colors_in_hand.setdefault(i['color'], 0)
             self.colors_in_hand[i['color']] += 1
 
-        self.max_rank_index = max([ranks.index(j['rank']) for j in i.hand])
-        self.min_rank_index = max([ranks.index(j['rank']) for j in i.hand])
+        self.max_rank_index = max([ranks.index(j['rank']) for j in self.hand])
+        self.min_rank_index = max([ranks.index(j['rank']) for j in self.hand])
 
         self.full_hand_representation = list()
         for i in self.hand:
@@ -47,6 +50,9 @@ class Agent():
         for i in colors:
             self.partial_representation.append(self.colors_in_hand.get(i, 0 ))
 
+    def get_representation(self):
+        return self.full_hand_representation
+
 
     def get_id(self):
         return self.id
@@ -57,6 +63,29 @@ class Game():
         self.players = [Agent() for _ in range(5)]
         self.generate_cards()
         self.stake = 0
+
+
+    def play_game(self, starting_amount = 5):
+        player_amounts = {i.get_id():starting_amount for i in self.players}
+        pot = 0
+        current_price = 1
+        self.generate_cards()
+
+        random.shuffle(self.deck)
+        for i in self.players:
+            i.hand.append(self.deck.pop())
+        for i in self.players:
+            i.hand.append(self.deck.pop())
+        for i in self.players:
+            i.update_representation()
+        representations = [i.get_representation() for i in self.players]
+        for c, i in enumerate(self.players):
+            i.play_turn([1 if j == c else 0 for j in range(5)], representations, player_amounts, pot, current_price)
+
+
+
+
+
 
 
     def generate_cards(self):
@@ -139,7 +168,7 @@ class Game():
                 self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
 
         #two pair
-        
+
         # if not self.winners:
         #     highest_val = dict()
         #     for i in self.players:
@@ -152,3 +181,24 @@ class Game():
         #     if highest_val:
         #         self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
 
+
+
+        #one pair
+        # if not self.winners:
+        #     highest_val = dict()
+        #     for i in self.players:
+        #
+        #         pair_counter =
+        #
+        #         if 2 in i.ranks_in_hand.values():
+        #             reverse_dict = {j:i for i, j in i.ranks_in_hand.items()}
+        #             highest_val[i.get_id()] = ranks.index(reverse_dict[3])
+        #     if highest_val:
+        #         self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
+
+        #high card
+        if not self.winners:
+            highest_val = dict()
+            for i in self.players:
+                highest_val[i.get_id()] = i.max_rank_index
+            self.winners = [ i for i, j in highest_val.items() if j == max(highest_val.values())]
